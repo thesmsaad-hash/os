@@ -77,7 +77,13 @@ function GoogleCalendarModal({
         }),
       })
 
-      const data = await res.json()
+      const text = await res.text()
+      let data: any
+      try {
+        data = JSON.parse(text)
+      } catch {
+        data = { success: false, error: text.slice(0, 150) || "Server returned invalid response" }
+      }
       setSyncing(false)
 
       if (data.success) {

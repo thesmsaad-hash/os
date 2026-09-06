@@ -105,15 +105,15 @@ export async function POST(req: Request) {
       return NextResponse.json({
         success: false,
         error: `Google Apps Script returned HTTP ${res.status}`,
-      }, { status: 502 })
+      })
     }
 
-    const syncResult = await res.json()
+    const syncResult = await res.json().catch(() => ({ success: false, error: "Invalid response from Apps Script" }))
     if (!syncResult.success) {
       return NextResponse.json({
         success: false,
         error: syncResult.error || "Google Calendar sync failed on script side",
-      }, { status: 500 })
+      })
     }
 
     // 3. Merge imported events into Turso
@@ -141,6 +141,6 @@ export async function POST(req: Request) {
     })
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Sync error"
-    return NextResponse.json({ success: false, error: msg }, { status: 500 })
+    return NextResponse.json({ success: false, error: msg })
   }
 }
