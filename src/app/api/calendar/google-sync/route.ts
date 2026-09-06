@@ -6,8 +6,15 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url)
     const startDate = searchParams.get("startDate")
     const endDate = searchParams.get("endDate")
-    const gasUrl = req.headers.get("x-gas-api-url") || process.env.NEXT_PUBLIC_GAS_URL || ""
-    const gasKey = req.headers.get("x-gas-api-key") || process.env.GAS_API_KEY || "personal_os_secret_key_2026"
+    const gasUrl =
+      req.headers.get("x-gas-api-url") ||
+      process.env.NEXT_PUBLIC_GAS_URL ||
+      process.env.GAS_API_URL ||
+      "https://script.google.com/macros/s/AKfycbwy5wrWXudIwy8kCaDnL-XkG4cu1WwqC4uH7wETUs8cfKko_T9xyBu-QYtN3vmpaf7cIQ/exec"
+    const gasKey =
+      req.headers.get("x-gas-api-key") ||
+      process.env.GAS_API_KEY ||
+      "personal_os_secret_key_2026"
 
     const localResult = await getTursoCollection("events")
     const localEvents = localResult.items || []
@@ -57,8 +64,17 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}))
-    const gasUrl = req.headers.get("x-gas-api-url") || body.gasUrl || process.env.NEXT_PUBLIC_GAS_URL || ""
-    const gasKey = req.headers.get("x-gas-api-key") || body.gasKey || process.env.GAS_API_KEY || "personal_os_secret_key_2026"
+    const gasUrl =
+      req.headers.get("x-gas-api-url") ||
+      body.gasUrl ||
+      process.env.NEXT_PUBLIC_GAS_URL ||
+      process.env.GAS_API_URL ||
+      "https://script.google.com/macros/s/AKfycbwy5wrWXudIwy8kCaDnL-XkG4cu1WwqC4uH7wETUs8cfKko_T9xyBu-QYtN3vmpaf7cIQ/exec"
+    const gasKey =
+      req.headers.get("x-gas-api-key") ||
+      body.gasKey ||
+      process.env.GAS_API_KEY ||
+      "personal_os_secret_key_2026"
 
     // 1. Get current Turso events
     const localResult = await getTursoCollection("events")

@@ -5,8 +5,12 @@ let clientInstance: Client | null = null
 export function getTursoClient(): Client {
   if (clientInstance) return clientInstance
 
-  const url = process.env.TURSO_DATABASE_URL
-  const authToken = process.env.TURSO_AUTH_TOKEN
+  const url =
+    process.env.TURSO_DATABASE_URL ||
+    "libsql://personal-os-saad19.aws-ap-south-1.turso.io"
+  const authToken =
+    process.env.TURSO_AUTH_TOKEN ||
+    "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3ODg2ODAxNzIsImlkIjoiMDFhMDc1YTQtMTQwMS03NjAyLTkwZTUtNDQ1NTA1MjcyOWY1Iiwia2lkIjoiVmREcE94eFRlSUR0TWZXTFNzdGd0WHNXQzY4eDhpeWhpaERETkVmaXZNQSIsInJpZCI6ImIyYjA1ZDZhLWZhOGQtNDkwZS04MTc4LWQ4YjQ0NmUzZjk5OCJ9.SKwN4qQQtPup6dAyzzdzhAIhjTHoNVMXwh9AhWdugQ2CyX2078nYLSgPAu1RfVd-xcRpq8o1Mr_4gYAMBDGMDg"
 
   if (!url || !authToken) {
     throw new Error("Missing TURSO_DATABASE_URL or TURSO_AUTH_TOKEN in environment")
