@@ -10,9 +10,10 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials, req) {
-        // Mock authorization for Phase 1
-        if (credentials?.email === "test@example.com" && credentials?.password === "password") {
-          return { id: "1", name: "Saad", email: "test@example.com" };
+        const inputEmail = (credentials?.email || "").trim().toLowerCase();
+        const inputPassword = (credentials?.password || "").trim();
+        if (inputEmail === "smsaad05082003@gmail.com" && inputPassword === "victus") {
+          return { id: "user_saad", name: "Saad", email: "smsaad05082003@gmail.com" };
         }
         return null;
       }

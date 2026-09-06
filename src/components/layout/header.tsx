@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Search, Bell, Sun, Moon, Command, Radio, ExternalLink, Send, Settings, Check, Cloud, RefreshCw, Database } from "lucide-react"
+import { Search, Bell, Sun, Moon, Command, Radio, ExternalLink, Send, Settings, Check, Cloud, RefreshCw, Database, LogOut, User, ShieldCheck } from "lucide-react"
 import { useTheme } from "next-themes"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -15,18 +15,22 @@ import {
 } from "@/lib/ntfy"
 import { useSyncStore } from "@/lib/stores/use-sync-store"
 import { useUserStore } from "@/lib/stores/use-user-store"
+import { useAuthStore } from "@/lib/stores/use-auth-store"
 
 export function Header() {
   const { theme, setTheme } = useTheme()
   const sync = useSyncStore()
   const { user } = useUserStore()
+  const { logout } = useAuthStore()
   const [mounted, setMounted] = useState(false)
   const [openNotifs, setOpenNotifs] = useState(false)
+  const [openUserMenu, setOpenUserMenu] = useState(false)
   const [config, setConfig] = useState<NtfyConfig | null>(null)
   const [logs, setLogs] = useState<NotificationLogItem[]>([])
   const [sendingTest, setSendingTest] = useState(false)
   const [testSuccess, setTestSuccess] = useState(false)
   const popoverRef = useRef<HTMLDivElement>(null)
+  const userMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -46,6 +50,9 @@ export function Header() {
     const handleClickOutside = (e: MouseEvent) => {
       if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
         setOpenNotifs(false)
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setOpenUserMenu(false)
       }
     }
     document.addEventListener("mousedown", handleClickOutside)
@@ -249,8 +256,63 @@ export function Header() {
             </Button>
           )}
 
-          <div className="h-8 w-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary text-sm font-bold ml-1 uppercase cursor-default" title={user.name}>
-            {user.name ? user.name.trim()[0] : "S"}
+          {/* User Profile & Auth Menu */}
+          <div className="relative ml-1" ref={userMenuRef}>
+            <button
+              onClick={() => setOpenUserMenu(!openUserMenu)}
+              className="h-8 w-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 border border-blue-400/30 flex items-center justify-center text-white text-xs font-bold uppercase transition-transform hover:scale-105 active:scale-95 shadow-sm shadow-blue-500/20 cursor-pointer"
+              title={`${user.name || "Saad"} (${user.email || "smsaad05082003@gmail.com"})`}
+            >
+              {user.name ? user.name.trim()[0] : "S"}
+            </button>
+
+            {openUserMenu && (
+              <div className="absolute right-0 mt-2 w-64 rounded-xl border border-border/80 bg-popover/95 backdrop-blur-md p-3 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-100">
+                {/* User Info */}
+                <div className="flex items-center gap-2.5 pb-3 border-b border-border/60">
+                  <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm">
+                    {user.name ? user.name.trim()[0] : "S"}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold truncate text-foreground flex items-center gap-1.5">
+                      <span>{user.name || "Saad"}</span>
+                      <span className="px-1.5 py-0.2 rounded-full bg-blue-500/15 text-[10px] text-blue-400 font-medium border border-blue-500/20">
+                        Master
+                      </span>
+                    </p>
+                    <p className="text-[11px] text-muted-foreground truncate">
+                      {user.email || "smsaad05082003@gmail.com"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Quick links */}
+                <div className="py-2 space-y-1">
+                  <Link
+                    href="/settings"
+                    onClick={() => setOpenUserMenu(false)}
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                  >
+                    <Settings className="h-3.5 w-3.5" />
+                    <span>Workspace Settings</span>
+                  </Link>
+                </div>
+
+                {/* Log Out */}
+                <div className="pt-2 border-t border-border/60">
+                  <button
+                    onClick={() => {
+                      setOpenUserMenu(false)
+                      logout()
+                    }}
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
+                  >
+                    <LogOut className="h-3.5 w-3.5" />
+                    <span>Lock / Log Out</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>

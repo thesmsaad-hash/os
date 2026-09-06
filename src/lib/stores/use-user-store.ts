@@ -32,7 +32,7 @@ export interface UserProfile {
 export const DEFAULT_USER: UserProfile = {
   id: "user_primary",
   name: "Saad",
-  email: "saad@example.com",
+  email: "smsaad05082003@gmail.com",
   timezone: "Asia/Kolkata",
   plan: "Pro Plan",
   city: "Bengaluru",
