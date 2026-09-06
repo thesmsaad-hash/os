@@ -1,10 +1,15 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "personal-os",
+  "main": ".open-next/worker.js",
   "compatibility_date": "2025-01-01",
   "compatibility_flags": [
     "nodejs_compat"
   ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
   "vars": {
     "TURSO_DATABASE_URL": "libsql://personal-os-saad19.aws-ap-south-1.turso.io",
     "NEXT_PUBLIC_GAS_URL": "https://script.google.com/macros/s/AKfycbwy5wrWXudIwy8kCaDnL-XkG4cu1WwqC4uH7wETUs8cfKko_T9xyBu-QYtN3vmpaf7cIQ/exec",
