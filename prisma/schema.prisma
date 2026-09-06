@@ -1,0 +1,323 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// NextAuth Models
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  
+  // App specific relations
+  tasks         Task[]
+  projects      ProjectMember[]
+  calendarEvents CalendarEvent[]
+  notes         Note[]
+  whiteboards   Whiteboard[]
+  habits        Habit[]
+  journalEntries JournalEntry[]
+  goals         Goal[]
+  focusSessions FocusSession[]
+  files         File[]
+  bookmarks     Bookmark[]
+  transactions  FinanceTransaction[]
+  notifications Notification[]
+  widgets       DashboardWidget[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Task Manager
+model Task {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  dueDate         DateTime?
+  startTime       DateTime?
+  endTime         DateTime?
+  priority        String    @default("Medium") // Low, Medium, High, Urgent
+  status          String    @default("Todo") // Inbox, Todo, In Progress, Waiting, Done, Cancelled
+  projectId       String?
+  estimatedTime   Int?      // in minutes
+  actualTime      Int?      // in minutes
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  userId          String
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project         Project?  @relation(fields: [projectId], references: [id])
+  subtasks        Subtask[]
+  tags            Tag[]     @relation("TaskTags")
+}
+
+model Subtask {
+  id        String   @id @default(cuid())
+  title     String
+  isDone    Boolean  @default(false)
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+// Project Management
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      String   @default("Planning") // Planning, Active, Paused, Completed, Archived
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  tasks       Task[]
+  members     ProjectMember[]
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  role      String   @default("Member")
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+// Calendar
+model CalendarEvent {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+  isAllDay    Boolean  @default(false)
+  color       String?
+  userId      String
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Notes
+model Note {
+  id          String   @id @default(cuid())
+  title       String
+  content     String   @db.Text
+  isFavorite  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tags        Tag[]    @relation("NoteTags")
+}
+
+// Whiteboard
+model Whiteboard {
+  id        String   @id @default(cuid())
+  title     String
+  data      String   @db.Text // Store JSON representation of the board
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WhiteboardObject {
+  id           String @id @default(cuid())
+  // Kept here just in case, but typically canvas data is just one big JSON blob
+  whiteboardId String
+}
+
+// Habits
+model Habit {
+  id        String   @id @default(cuid())
+  name      String
+  icon      String?
+  frequency String   // e.g., Daily, Weekly
+  target    Int      @default(1)
+  category  String?
+  createdAt DateTime @default(now())
+  userId    String
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs      HabitLog[]
+}
+
+model HabitLog {
+  id        String   @id @default(cuid())
+  habitId   String
+  date      DateTime
+  value     Int      @default(1)
+
+  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  @@unique([habitId, date])
+}
+
+// Journal
+model JournalEntry {
+  id        String   @id @default(cuid())
+  date      DateTime
+  content   String   @db.Text
+  mood      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Goals
+model Goal {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    String?
+  targetDate  DateTime?
+  progress    Int      @default(0) // 0 to 100
+  createdAt   DateTime @default(now())
+  userId      String
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  milestones  Milestone[]
+}
+
+model Milestone {
+  id        String   @id @default(cuid())
+  title     String
+  isDone    Boolean  @default(false)
+  goalId    String
+
+  goal      Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+}
+
+// Focus / Pomodoro
+model FocusSession {
+  id        String   @id @default(cuid())
+  startTime DateTime
+  endTime   DateTime
+  duration  Int      // in minutes
+  userId    String
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Files / Media
+model File {
+  id          String   @id @default(cuid())
+  name        String
+  url         String
+  size        Int
+  type        String
+  category    String?  // Client Videos, Assets, Music, etc.
+  createdAt   DateTime @default(now())
+  userId      String
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Bookmarks
+model Bookmark {
+  id          String   @id @default(cuid())
+  url         String
+  title       String
+  description String?
+  thumbnail   String?
+  category    String?
+  createdAt   DateTime @default(now())
+  userId      String
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tags        Tag[]    @relation("BookmarkTags")
+}
+
+// Finance
+model FinanceTransaction {
+  id          String   @id @default(cuid())
+  amount      Float
+  type        String   // Income, Expense
+  category    String
+  date        DateTime
+  description String?
+  userId      String
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Notifications
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  userId    String
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Tags
+model Tag {
+  id    String @id @default(cuid())
+  name  String @unique
+  color String?
+
+  tasks     Task[]     @relation("TaskTags")
+  notes     Note[]     @relation("NoteTags")
+  bookmarks Bookmark[] @relation("BookmarkTags")
+}
+
+// Dashboard Widgets Layout
+model DashboardWidget {
+  id        String @id @default(cuid())
+  type      String // TodayTasks, Weather, Pomodoro, etc.
+  x         Int
+  y         Int
+  w         Int
+  h         Int
+  userId    String
+
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
