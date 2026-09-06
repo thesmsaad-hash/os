@@ -633,3 +633,14 @@ function handleSyncGoogleCalendar(localEvents, startDateStr, endDateStr) {
     return { success: false, error: "Calendar sync error: " + err.toString() };
   }
 }
+
+/**
+ * Run this function ONCE directly from the Apps Script editor toolbar (▶ Run)
+ * to trigger the Google Calendar & Drive OAuth permission prompt!
+ */
+function authorizeCalendarAndDrive() {
+  const cal = CalendarApp.getDefaultCalendar();
+  Logger.log("✅ Successfully authorized Google Calendar: " + cal.getName());
+  const drive = DriveApp.getRootFolder();
+  Logger.log("✅ Successfully authorized Google Drive: " + drive.getName());
+}

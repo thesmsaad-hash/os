@@ -35,8 +35,24 @@ If you want a custom secret API key instead of the default:
    - **Execute as**: **Me (your-email@gmail.com)**
    - **Who has access**: **Anyone** *(Protected by your API key in all payloads)*
 4. Click **Deploy**.
-5. Google will ask you to **Authorize access** to Google Drive. Click **Authorize access**, select your Google account, click **Advanced**, and click **Go to Personal OS Backend (unsafe)** to grant Drive permissions.
+5. Google will ask you to **Authorize access** to Google Drive & Calendar. Click **Authorize access**, select your Google account, click **Advanced**, and click **Go to Personal OS Backend (unsafe)** to grant permissions.
 6. Copy the **Web App URL** (ends in `/exec`).
+
+---
+
+## 3.1 Authorize Calendar & Drive Permissions (If you see "script does not have permission")
+
+If you get a `Calendar sync error: The script does not have permission to perform that action`:
+1. In the Google Apps Script editor top toolbar, find the function dropdown next to **Debug**.
+2. Select **`authorizeCalendarAndDrive`**.
+3. Click **▶ Run**.
+4. A popup will appear: **"Authorization required: Personal OS Backend needs permission to access your data on Google"**.
+5. Click **Review permissions** → choose your Google account → click **Advanced** → click **Go to Personal OS Backend (unsafe)** → click **Allow**.
+6. Now update the deployment:
+   - Click **Deploy** → **Manage deployments**.
+   - Click the ✏️ **Edit** icon next to your active deployment.
+   - Change **Version** to **New version**.
+   - Click **Deploy**.
 
 ---
 
